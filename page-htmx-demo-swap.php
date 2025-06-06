@@ -14,7 +14,7 @@ $hxtheme_data = $wp_query->hxtheme_data;
 		<p><?php _e($hxtheme_data['description'], 'hxtheme'); ?></p>
 
 		<p>
-			<button id="trigger-demo" hx-get="<?php echo hxwp_api_url($hxtheme_data['path']); ?>" hx-vals='{"action": "demo"}' hx-swap="innerHTML" hx-target="#hxtheme-demo-swap" hx-disabled-elt="this">Click to swap with response</button>
+			<button id="trigger-demo" hx-get="<?php echo hmapi_get_endpoint_url($hxtheme_data['path']); ?>" hx-vals='{"action": "demo"}' hx-swap="innerHTML" hx-target="#hxtheme-demo-swap" hx-disabled-elt="this">Click to swap with response</button>
 		</p>
 		<p>
 		<div id="hxtheme-demo-swap">

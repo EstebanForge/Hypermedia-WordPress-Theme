@@ -1,21 +1,37 @@
 <?php
 // No direct access
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
-$hxtheme_options = [
-	'demos' => [
-		'htmx-demo-swap' => [
-			'title'       => __('HTMX Swap', 'hxtheme'),
-			'description' => __('Example of HTMX swap response.', 'hxtheme'),
-			'path'        => '/demo-swap',
-		],
-		'htmx-demo-noswap' => [
-			'title'          => __('HTMX No Swap', 'hxtheme'),
-			'description'    => __('Example of HTMX no swap response.', 'hxtheme'),
-			'path'           => '/noswap/demo-noswap',
-		],
-	],
-];
+/**
+ * Get hxtheme options with proper translation loading
+ *
+ * @return array
+ */
+function hxtheme_get_options()
+{
+    static $hxtheme_options = null;
+
+    if ($hxtheme_options === null) {
+        $hxtheme_options = [
+            'demos' => [
+                'htmx-demo-swap' => [
+                    'title'       => __('HTMX Swap', 'hxtheme'),
+                    'description' => __('Example of HTMX swap response.', 'hxtheme'),
+                    'path'        => '/demo-swap',
+                ],
+                'htmx-demo-noswap' => [
+                    'title'          => __('HTMX No Swap', 'hxtheme'),
+                    'description'    => __('Example of HTMX no swap response.', 'hxtheme'),
+                    'path'           => '/noswap/demo-noswap',
+                ],
+            ],
+        ];
+    }
+
+    return $hxtheme_options;
+}
 
 /**
  * Theme activation
@@ -25,14 +41,14 @@ $hxtheme_options = [
 add_action('after_switch_theme', 'hxtheme_activation');
 function hxtheme_activation()
 {
-	// Check if HTMX-API-WP plugin is present and activated
-	if (!function_exists('hxwp_api_url')) {
-		// Deactivate theme, go back to default
-		switch_theme(WP_DEFAULT_THEME);
+    // Check if HTMX-API-WP plugin is present and activated
+    if (!function_exists('hmapi_get_endpoint_url')) {
+        // Deactivate theme, go back to default
+        switch_theme(WP_DEFAULT_THEME);
 
-		// Output error message
-		wp_die(__('This theme requires <a href="https://github.com/TCattd/HTMX-API-WP" target="_blank">HTMX-API-WP plugin</a> to work. Please install and activate it first.', 'hxtheme'));
-	}
+        // Output error message
+        wp_die(__('This theme requires <a href="https://wordpress.org/plugins/api-for-htmx/" target="_blank">Hypermedia API for WordPress plugin</a> to work. Please install and activate it first.', 'hxtheme'));
+    }
 }
 
 /**
@@ -43,12 +59,15 @@ function hxtheme_activation()
 add_action('after_setup_theme', 'hxtheme_setup');
 function hxtheme_setup()
 {
-	add_theme_support('custom-logo');
-	add_theme_support('post-thumbnails');
-	add_theme_support('html5', ['comment-list', 'comment-form', 'search-form', 'gallery', 'caption', 'style', 'script']);
-	add_theme_support('title-tag');
+    // Load theme textdomain
+    load_theme_textdomain('hxtheme', get_template_directory() . '/languages');
 
-	do_action('hxtheme/setup/end');
+    add_theme_support('custom-logo');
+    add_theme_support('post-thumbnails');
+    add_theme_support('html5', ['comment-list', 'comment-form', 'search-form', 'gallery', 'caption', 'style', 'script']);
+    add_theme_support('title-tag');
+
+    do_action('hxtheme/setup/end');
 }
 
 /**
@@ -59,20 +78,20 @@ function hxtheme_setup()
 add_action('wp_enqueue_scripts', 'htmx_scripts_styles');
 function htmx_scripts_styles()
 {
-	do_action('hxtheme/scripts_styles/start');
+    do_action('hxtheme/scripts_styles/start');
 
-	$theme_version  = wp_get_theme()->get('Version');
-	$style_picocss  = get_template_directory_uri() . '/assets/css/pico.min.css';
-	$style_hxtheme  = get_template_directory_uri() . '/assets/css/hxtheme.css';
-	$script_hxtheme = get_template_directory_uri() . '/assets/js/hxtheme.js';
+    $theme_version  = wp_get_theme()->get('Version');
+    $style_picocss  = get_template_directory_uri() . '/assets/css/pico.min.css';
+    $style_hxtheme  = get_template_directory_uri() . '/assets/css/hxtheme.css';
+    $script_hxtheme = get_template_directory_uri() . '/assets/js/hxtheme.js';
 
-	do_action('hxtheme/scripts_styles/before_enqueue');
+    do_action('hxtheme/scripts_styles/before_enqueue');
 
-	wp_enqueue_style('picocss-style', $style_picocss, [], $theme_version);
-	wp_enqueue_style('hxtheme-style', $style_hxtheme, ['picocss-style'], $theme_version);
-	wp_enqueue_script('hxtheme-script', $script_hxtheme, [], $theme_version, true);
+    wp_enqueue_style('picocss-style', $style_picocss, [], $theme_version);
+    wp_enqueue_style('hxtheme-style', $style_hxtheme, ['picocss-style'], $theme_version);
+    wp_enqueue_script('hxtheme-script', $script_hxtheme, [], $theme_version, true);
 
-	do_action('hxtheme/scripts_styles/end');
+    do_action('hxtheme/scripts_styles/end');
 }
 
 /**
@@ -83,22 +102,23 @@ function htmx_scripts_styles()
 add_action('wp_head', 'hxtheme_header_meta');
 function hxtheme_header_meta()
 {
-	do_action('hxtheme/header_meta/start');
+    do_action('hxtheme/header_meta/start');
 
-	$htmx_timeout           = apply_filters('hxtheme/meta/timeout', 60000);
-	$htmx_globalTransitions = apply_filters('hxtheme/meta/globalTransitions', 'true'); // we need a string here
+    $htmx_timeout           = apply_filters('hxtheme/meta/timeout', 60000);
+    $htmx_globalTransitions = apply_filters('hxtheme/meta/globalTransitions', 'true'); // we need a string here
 
-	$htmx_config = apply_filters('hxtheme/meta/config', [
-		'timeout'               => $htmx_timeout,
-		'globalViewTransitions' => $htmx_globalTransitions,
-	]);
+    $htmx_config = apply_filters('hxtheme/meta/config', [
+        'timeout'               => $htmx_timeout,
+        'globalViewTransitions' => $htmx_globalTransitions,
+    ]);
 
-	do_action('hxtheme/header_meta/before_render');
-?>
-	<meta name="color-scheme" content="light dark" />
-	<meta name="htmx-config" content='<?php echo json_encode($htmx_config); ?>' />
-	<?php
-	do_action('hxtheme/header_meta/end');
+    do_action('hxtheme/header_meta/before_render');
+    ?>
+<meta name="color-scheme" content="light dark" />
+<meta name="htmx-config"
+	content='<?php echo json_encode($htmx_config); ?>' />
+<?php
+        do_action('hxtheme/header_meta/end');
 }
 
 /**
@@ -108,33 +128,33 @@ function hxtheme_header_meta()
  */
 function hxtheme_global_extensions()
 {
-	do_action('hxtheme/global_extensions/start');
+    do_action('hxtheme/global_extensions/start');
 
-	$htmx_ext = [
-		//'head-support',
-		//'method-override',
-		//'morphdom-swap',
-		//'multi-swap',
-		//'preload',
-		//'remove-me',
-		//'path-params',
-	];
+    $htmx_ext = [
+        //'head-support',
+        //'method-override',
+        //'morphdom-swap',
+        //'multi-swap',
+        //'preload',
+        //'remove-me',
+        //'path-params',
+    ];
 
-	// Check if WP DEBUG is enabled
-	if (defined('WP_DEBUG') && WP_DEBUG) {
-		$htmx_ext[] = 'debug';
-	}
+    // Check if WP DEBUG is enabled
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        $htmx_ext[] = 'debug';
+    }
 
-	apply_filters('hxtheme/global_extensions/array', $htmx_ext);
+    apply_filters('hxtheme/global_extensions/array', $htmx_ext);
 
-	do_action('hxtheme/global_extensions/end', $htmx_ext);
+    do_action('hxtheme/global_extensions/end', $htmx_ext);
 
-	if (empty($htmx_ext) || !is_array($htmx_ext)) {
-		return;
-	}
+    if (empty($htmx_ext) || !is_array($htmx_ext)) {
+        return;
+    }
 
-	// comma separated list of extensions
-	echo ' hx-ext="' . implode(',', $htmx_ext) . '" ';
+    // comma separated list of extensions
+    echo ' hx-ext="' . implode(',', $htmx_ext) . '" ';
 }
 
 /**
@@ -145,48 +165,50 @@ function hxtheme_global_extensions()
  */
 function hxtheme_global_boost()
 {
-	do_action('hxtheme/global_boost/start');
+    do_action('hxtheme/global_boost/start');
 
-	$boost = apply_filters('hxtheme/global_boost', true);
+    $boost = apply_filters('hxtheme/global_boost', true);
 
-	// Debug
-	//$boost = false;
+    // Debug
+    //$boost = false;
 
-	if ($boost === true) {
-		echo ' hx-boost="true" ';
-	}
+    if ($boost === true) {
+        echo ' hx-boost="true" ';
+    }
 }
 
 /**
  * Render header nav
  */
 if (!function_exists('hxtheme_header_nav')) {
-	function hxtheme_header_nav()
-	{
-		global $hxtheme_options;
+    function hxtheme_header_nav()
+    {
+        $hxtheme_options = hxtheme_get_options();
 
-		do_action('hxtheme/header_nav/start');
-	?>
-		<ul>
-			<li><a href="<?php echo esc_url(home_url('/')); ?>"><?php _e('Home', 'hxtheme'); ?></a></li>
-			<?php
-			// If WooCommerce is activated, add a link to the shop
-			if (class_exists('WooCommerce')) {
-				echo '<li><a href="' . esc_url(wc_get_page_permalink('shop')) . '">' . __('Shop', 'hxtheme') . '</a></li>';
-			}
+        do_action('hxtheme/header_nav/start');
+        ?>
+<ul>
+	<li><a
+			href="<?php echo esc_url(home_url('/')); ?>"><?php _e('Home', 'hxtheme'); ?></a>
+	</li>
+	<?php
+                // If WooCommerce is activated, add a link to the shop
+                if (class_exists('WooCommerce')) {
+                    echo '<li><a href="' . esc_url(wc_get_page_permalink('shop')) . '">' . __('Shop', 'hxtheme') . '</a></li>';
+                }
 
-			if (isset($hxtheme_options['demos']) && is_array($hxtheme_options['demos'])) {
-				foreach ($hxtheme_options['demos'] as $slug => $demo) {
-					$url = esc_url(home_url('/' . $slug . '/'));
+        if (isset($hxtheme_options['demos']) && is_array($hxtheme_options['demos'])) {
+            foreach ($hxtheme_options['demos'] as $slug => $demo) {
+                $url = esc_url(home_url('/' . $slug . '/'));
 
-					echo '<li><a href="' . $url . '">' . $demo['title'] . '</a></li>';
-				}
-			}
-			?>
-		</ul>
+                echo '<li><a href="' . $url . '">' . $demo['title'] . '</a></li>';
+            }
+        }
+        ?>
+</ul>
 <?php
-		do_action('hxtheme/header_nav/end');
-	}
+        do_action('hxtheme/header_nav/end');
+    }
 }
 
 /**
@@ -196,32 +218,34 @@ if (!function_exists('hxtheme_header_nav')) {
  * @return void
  */
 if (!function_exists('hxtheme_demos')) {
-	function hxtheme_demos($template)
-	{
-		global $wp_query, $hxtheme_options;
+    function hxtheme_demos($template)
+    {
+        global $wp_query;
 
-		$hxtheme_demo_slugs = [];
-		$current_slug       = isset($wp_query->query_vars['name']) ? $wp_query->query_vars['name'] : '';
+        $hxtheme_options = hxtheme_get_options();
+        $hxtheme_demo_slugs = [];
+        $current_slug       = isset($wp_query->query_vars['name']) ? $wp_query->query_vars['name'] : '';
 
-		if (isset($hxtheme_options['demos']) && is_array($hxtheme_options['demos'])) {
-			$hxtheme_demo_slugs = $hxtheme_options['demos'];
-		}
+        if (isset($hxtheme_options['demos']) && is_array($hxtheme_options['demos'])) {
+            $hxtheme_demo_slugs = $hxtheme_options['demos'];
+        }
 
-		if (in_array($current_slug, array_keys($hxtheme_demo_slugs))) {
-			$hxtheme_template  = locate_template(['page-' . $current_slug . '.php']);
+        if (in_array($current_slug, array_keys($hxtheme_demo_slugs))) {
+            $hxtheme_template  = locate_template(['page-' . $current_slug . '.php']);
 
-			if (!empty($hxtheme_template)) {
-				status_header(200);
+            if (!empty($hxtheme_template)) {
+                status_header(200);
 
-				$wp_query->is_404  = false;
-				$wp_query->is_page = true;
-				$wp_query->hxtheme_data = $hxtheme_options['demos'][$current_slug];
+                $wp_query->is_404  = false;
+                $wp_query->is_page = true;
+                $wp_query->hxtheme_data = $hxtheme_options['demos'][$current_slug];
 
-				return $hxtheme_template;
-			}
-		}
+                return $hxtheme_template;
+            }
+        }
 
-		return $template;
-	}
-	add_filter('template_include', 'hxtheme_demos');
+        return $template;
+    }
+    add_filter('template_include', 'hxtheme_demos');
 }
+?>

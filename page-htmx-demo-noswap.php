@@ -14,28 +14,28 @@ $hxtheme_data = $wp_query->hxtheme_data;
 		<p><?php _e($hxtheme_data['description'], 'hxtheme'); ?></p>
 
 		<p>
-			<button id="trigger-demo" hx-get="<?php echo hxwp_api_url($hxtheme_data['path']); ?>" hx-swap="none" hx-vals='{"action": "demo", "crash": "dummy"}' hx-disabled-elt="this" hx-indicator=".spinner">Click to send data</button>
+			<button id="trigger-demo" hx-get="<?php echo hmapi_get_endpoint_url($hxtheme_data['path']); ?>" hx-swap="none" hx-vals='{"action": "demo", "crash": "dummy"}' hx-disabled-elt="this" hx-indicator=".spinner">Click to send data</button>
 		<div class="spinner htmx-indicator"></div>
 		</p>
 		<p>
-			<?php _e('We will receive a response as a Header Response at "Hx-Trigger". Open the browser console to see the response (Network tab).', 'hxtheme'); ?>
+			<?php _e('We will receive a response as a Header Response at "HX-Trigger". Open the browser console to see the response (Network tab).', 'hxtheme'); ?>
 		</p>
 		<p>
 			<?php _e('Response should look like this:', 'hxtheme'); ?>
 			<code>
-				Hx-Trigger:
-				{"hxwpResponse":{"action":"none","status":"success","data":{"message":"Server-side processing done.","params":{"action":"demo","crash":"dummy"}}}}
+				HX-Trigger:
+				{"hmapiResponse":{"action":"none","status":"success","data":{"message":"Server-side processing done.","params":{"action":"demo","crash":"dummy"}}}}
 			</code>
 		</p>
 		<p>
 			<?php _e('We can access the response in the browser console with:', 'hxtheme'); ?>
 			<code>
-				document.body.addEventListener('hxwpResponse', (event) => {
+				document.body.addEventListener('hmapiResponse', (event) => {
 				console.log(event.detail);
 				});
 			</code>
 			<script>
-				document.body.addEventListener('hxwpResponse', (event) => {
+				document.body.addEventListener('hmapiResponse', (event) => {
 					if (event.detail.action === 'alert') {
 						alert(event.detail.data.message);
 					}
